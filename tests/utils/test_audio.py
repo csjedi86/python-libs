@@ -1,16 +1,20 @@
 # tests/utils/test_audio.py
 
+import os
 import pytest
 from src.utils.audio import play_alarm_sound
 
 def test_play_alarm_sound_success(mock_pygame_init, mock_get_init, mock_sound, mock_get_busy):
     """Test play_alarm_sound with a valid sound file."""
-    sound_file = "alarm_sound.wav"
-    
+    sound_file = "resources/sounds/alarm_sound.wav"  # Update the path here
+
+    # Ensure the sound file exists before the test
+    assert os.path.exists(sound_file), f"Sound file not found: {sound_file}"
+
     play_alarm_sound(sound_file)
 
     mock_pygame_init.assert_called_once()
-    # Asssert that the sound was called once with the correct path
+    # Assert that the sound was called once with the correct path
     mock_sound.assert_called_once()
     assert sound_file in mock_sound.call_args[0][0]
 
@@ -20,13 +24,13 @@ def test_play_alarm_sound_mixer_not_initialized(mock_get_init, mock_pygame_init)
     """Test play_alarm_sound when mixer is not initialized."""
     # Simulate mixer not initialized
     mock_get_init.return_value = False
-    
-    with pytest.raises(SystemExit):
-        play_alarm_sound("resources/sounds/alarm_sound.wav")
+
+    with pytest.raises(RuntimeError, match="Mixer not initialized. Ensure that your audio subsystem is set up correctly."):
+        play_alarm_sound("resources/sounds/alarm_sound.wav")  # Update the path here
 
 def test_play_alarm_sound_error_loading_sound(mock_get_init, mock_pygame_init, mock_sound_loading_error):
     """Test play_alarm_sound when there is an error loading the sound file."""
-    sound_file = "resources/sounds/alarm_sound.wav"
+    sound_file = "resources/sounds/alarm_sound.wav"  # Update the path here
 
     with pytest.raises(SystemExit):
         play_alarm_sound(sound_file)
